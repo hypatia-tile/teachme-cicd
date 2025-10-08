@@ -1,0 +1,31 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    fail-fast: false
+    matrix:
+      os: [ubuntu-latest, macos-latest]
+      cc: [gcc, clang]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select compiler
+        run: |
+          echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
+
+      - name: Build
+        run: make -j2
+
+      - name: Run test
+
+
