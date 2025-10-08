@@ -1,19 +1,16 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   build-test:
-    fail-fast: false
-    matrix:
-      os: [ubuntu-latest, macos-latest]
-      cc: [gcc, clang]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        cc: [gcc, clang]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -26,6 +23,30 @@ jobs:
       - name: Build
         run: make -j2
 
-      - name: Run test
+      - name: Run tests
+        run: make test
 
+      - name: Upload binaries (on success)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}-${{ matrix.cc }}
+          path: build/
+
+  # Optional: add Windows later when you’re ready with MSYS2 or cl.exe
+  # build-test-windows:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install MSYS2 & gcc
+  #       uses: msys2/setup-msys2@v2
+  #       with:
+  #         install: mingw-w64-x86_64-gcc make
+  #         update: true
+  #         msystem: MINGW64
+  #     - name: Build & Test
+  #       shell: msys2 {0}
+  #       run: |
+  #         make CC=gcc -j2
+  #         make CC=gcc test
 
